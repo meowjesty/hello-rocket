@@ -181,6 +181,11 @@ async fn strict_thing(thing: Form<Strict<Thing>>) {
     println!("Form {:?}", thing);
 }
 
+#[get("/things?<name>&<color>")]
+async fn query_thing(name: &str, color: f32) {
+    println!("Query {} {}", name, color);
+}
+
 #[rocket::main]
 async fn main() {
     let config = Config {
@@ -208,7 +213,8 @@ async fn main() {
                 new_thing,
                 json_thing,
                 form_thing,
-                strict_thing
+                strict_thing,
+                query_thing
             ],
         )
         .launch()
