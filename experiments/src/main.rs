@@ -1,15 +1,18 @@
 use std::{
     io,
     path::{Path, PathBuf},
+    sync::atomic::AtomicU64,
 };
 
+use log::error;
 use rocket::{
+    fairing::{self, AdHoc},
     form::{Form, Strict},
     serde::{
         json::{serde_json, Json},
         Deserialize, Serialize,
     },
-    FromForm,
+    FromForm, State,
 };
 
 use rocket::{
@@ -23,6 +26,8 @@ use rocket::{
     tokio::task::spawn_blocking,
     Build, Config, Rocket,
 };
+use rocket_sync_db_pools::database;
+use sqlx::ConnectOptions;
 
 #[get("/")]
 async fn index() -> &'static str {
@@ -186,6 +191,61 @@ async fn query_thing(name: &str, color: f32) {
     println!("Query {} {}", name, color);
 }
 
+#[derive(Debug)]
+struct Counter {
+    count: AtomicU64,
+}
+
+#[get("/state")]
+async fn get_state(counter: &State<Counter>) {
+    println!("{:#?}", counter);
+}
+
+// #[database("experiments")]
+// struct ExperimentsDbConn(diesel::SqliteConnection);
+
+// #[get("/state/database")]
+// async fn get_with_db(db_conn: ExperimentsDbConn) -> String {
+//     db_conn.run(|c| todo!()).await;
+
+//     format!("DONE")
+// }
+
+type Database = sqlx::SqlitePool;
+
+// NOTE(alex): Fairings = middleware
+async fn init_db(rocket: Rocket<Build>) -> fairing::Result {
+    use rocket_sync_db_pools::Config;
+
+    let config = match Config::from("sqlx", &rocket) {
+        Ok(config) => config,
+        Err(e) => {
+            error!("Failed to read SQLx config: {}", e);
+            return Err(rocket);
+        }
+    };
+
+    let mut opts = sqlx::sqlite::SqliteConnectOptions::new()
+        .filename(&config.url)
+        .create_if_missing(true);
+
+    opts.disable_statement_logging();
+    let db = match Database::connect_with(opts).await {
+        Ok(db) => db,
+        Err(e) => {
+            error!("Failed to connect to SQLx database: {}", e);
+            return Err(rocket);
+        }
+    };
+
+    // if let Err(e) = sqlx::migrate!("db/sqlx/migrations").run(&db).await {
+    //     error!("Failed to initialize SQLx database: {}", e);
+    //     return Err(rocket);
+    // }
+
+    Ok(rocket.manage(db))
+}
+
 #[rocket::main]
 async fn main() {
     let config = Config {
@@ -195,6 +255,12 @@ async fn main() {
 
     rocket::build()
         .configure(config)
+        // globa state (app-wide)
+        .manage(Counter {
+            count: AtomicU64::new(0),
+        })
+        // .attach(ExperimentsDbConn::fairing())
+        .attach(AdHoc::try_on_ignite("DB SETUP", init_db))
         .mount(
             "/",
             routes![
@@ -214,7 +280,8 @@ async fn main() {
                 json_thing,
                 form_thing,
                 strict_thing,
-                query_thing
+                query_thing,
+                get_state
             ],
         )
         .launch()
