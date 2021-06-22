@@ -44,7 +44,9 @@ impl<'r> FromData<'r> for InsertTask {
 
         let insert_task: InsertTask = serde_json::from_str(&as_string).unwrap();
         if insert_task.non_empty_title.trim().is_empty() {
-            return Outcome::Failure((Status::BadRequest, AppError::EmptyTitle));
+            // TODO(alex) [high] 2021-06-22: This is where the error is returned from (the actual
+            // response), read the note in errors.rs.
+            return Outcome::Failure((Status::UnprocessableEntity, AppError::EmptyTitle));
         }
 
         Outcome::Success(insert_task)
@@ -71,7 +73,9 @@ impl<'r> FromData<'r> for UpdateTask {
         let update_task: UpdateTask = serde_json::from_str(&as_string).unwrap();
 
         if update_task.new_title.trim().is_empty() {
-            return Outcome::Failure((Status::BadRequest, AppError::EmptyTitle));
+            // TODO(alex) [high] 2021-06-22: This is where the error is returned from (the actual
+            // response), read the note in errors.rs.
+            return Outcome::Failure((Status::UnprocessableEntity, AppError::EmptyTitle));
         }
 
         Outcome::Success(update_task)

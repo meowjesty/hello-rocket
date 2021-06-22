@@ -31,9 +31,8 @@ fn rocket() -> _ {
             id_tracker: AtomicU64::new(0),
             task_list: Mutex::new(Vec::with_capacity(32)),
         })
-        .mount("/", routes![index])
         .mount(
-            "/tasks",
-            routes![insert, find_all, find_by_id, delete, update],
+            "/",
+            routes![index, insert, find_all, find_by_id, delete, update],
         )
 }

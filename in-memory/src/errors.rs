@@ -26,6 +26,9 @@ pub(crate) enum AppError {
 impl<'r> Responder<'r, 'static> for AppError {
     fn respond_to(self, _request: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
         let status = match self {
+            // TODO(alex) [high] 2021-06-21: Insert invalid with empty title returned default 400
+            // error, instead of the UnprocessableEntity, it knows that the data guard failed with
+            // EmptyTitle, but we never got to this error proper.
             AppError::EmptyTitle => Status::UnprocessableEntity,
             AppError::IdNotFound(_) => Status::NotFound,
             AppError::Internal => Status::InternalServerError,
