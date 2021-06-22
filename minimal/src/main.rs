@@ -1,4 +1,4 @@
-use rocket::{get, routes};
+use rocket::{get, launch, routes};
 
 const WELCOME: &'static str = include_str!("./../strings/welcome.txt");
 
@@ -7,11 +7,7 @@ async fn index() -> &'static str {
     WELCOME
 }
 
-#[rocket::main]
-async fn main() {
-    rocket::build()
-        .mount("/", routes![index])
-        .launch()
-        .await
-        .unwrap();
+#[launch]
+fn rocket() -> _ {
+    rocket::build().mount("/", routes![index])
 }

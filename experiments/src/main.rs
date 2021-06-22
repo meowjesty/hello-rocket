@@ -20,13 +20,13 @@ use rocket::{
     fs::NamedFile,
     get,
     http::{CookieJar, Status},
-    launch, post,
-    request::{self, FromRequest},
+    post,
+    request::{self},
     routes,
     tokio::task::spawn_blocking,
     Build, Config, Rocket,
 };
-use rocket_sync_db_pools::database;
+
 use sqlx::ConnectOptions;
 
 #[get("/")]

@@ -1,4 +1,4 @@
-Learning actix by implementing a Todo service?!
+Learning rocket by implementing a Todo service?!
 
 The API routes are:
 
