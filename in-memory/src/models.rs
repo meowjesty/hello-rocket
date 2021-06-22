@@ -1,12 +1,8 @@
-use std::io::Cursor;
-
 use crate::errors::AppError;
 use rocket::{
     data::{FromData, Outcome, ToByteUnit},
-    http::{ContentType, Status},
-    response::Responder,
+    http::Status,
     serde::{json::serde_json, Deserialize, Serialize},
-    Response,
 };
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -7,6 +7,5 @@ edition = "2018"
 
 [dependencies]
 rocket = { version = "0.5.0-rc.1" }
-rocket_contrib = { version = "*" }
 serde = "*"
 thiserror = "*"
