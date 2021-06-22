@@ -1,14 +1,14 @@
 use std::io::Cursor;
 
 use rocket::{
-    http::{hyper::StatusCode, ContentType, Status},
+    http::{ContentType, Status},
     response::Responder,
-    serde::{json::serde_json, Deserialize, Serialize},
     Response,
 };
 use thiserror::Error;
 
-#[derive(Debug, Serialize, Deserialize, Error)]
+// TODO(alex) [high] 2021-06-22: Derive the `responder` and use the `status_code` attribute.
+#[derive(Debug, Error)]
 pub(crate) enum AppError {
     #[error("`title` field of `Task` cannot be empty!")]
     EmptyTitle,
@@ -18,21 +18,25 @@ pub(crate) enum AppError {
 
     #[error("Internal server error!")]
     Internal,
+
+    #[error("`{0}`")]
+    IO(#[from] std::io::Error),
 }
 
 impl<'r> Responder<'r, 'static> for AppError {
-    fn respond_to(self, request: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
-        let status_code = match self {
-            AppError::EmptyTitle => 400,
-            AppError::IdNotFound(_) => 404,
-            AppError::Internal => 500,
+    fn respond_to(self, _request: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
+        let status = match self {
+            AppError::EmptyTitle => Status::UnprocessableEntity,
+            AppError::IdNotFound(_) => Status::NotFound,
+            AppError::Internal => Status::InternalServerError,
+            AppError::IO(_) => Status::InternalServerError,
         };
 
-        let error_string = serde_json::to_string_pretty(&self).unwrap();
+        let error_string = format!("{}", self);
         Response::build()
             .sized_body(error_string.len(), Cursor::new(error_string))
             .header(ContentType::Text)
-            .status(Status::new(status_code))
+            .status(status)
             .ok()
     }
 }

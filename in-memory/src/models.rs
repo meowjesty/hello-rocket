@@ -29,16 +29,6 @@ pub(crate) struct UpdateTask {
     pub(crate) details: String,
 }
 
-// impl<'r> Responder<'r, 'static> for Task {
-//     fn respond_to(self, request: &'r rocket::Request<'_>) -> rocket::response::Result<'static> {
-//         let task_string = serde_json::to_string_pretty(&self).unwrap();
-//         Response::build()
-//             .sized_body(task_string.len(), Cursor::new(task_string))
-//             .header(ContentType::JSON)
-//             .ok()
-//     }
-// }
-
 #[rocket::async_trait]
 impl<'r> FromData<'r> for InsertTask {
     type Error = AppError;
@@ -52,7 +42,7 @@ impl<'r> FromData<'r> for InsertTask {
             Ok(string) if string.is_complete() => string.into_inner(),
             Ok(_) => return Outcome::Failure((Status::PayloadTooLarge, AppError::Internal)),
             Err(fail) => {
-                return Outcome::Failure((Status::InternalServerError, AppError::Internal))
+                return Outcome::Failure((Status::InternalServerError, AppError::IO(fail)));
             }
         };
 
@@ -78,7 +68,7 @@ impl<'r> FromData<'r> for UpdateTask {
             Ok(string) if string.is_complete() => string.into_inner(),
             Ok(_) => return Outcome::Failure((Status::PayloadTooLarge, AppError::Internal)),
             Err(fail) => {
-                return Outcome::Failure((Status::InternalServerError, AppError::Internal))
+                return Outcome::Failure((Status::InternalServerError, AppError::IO(fail)))
             }
         };
 
