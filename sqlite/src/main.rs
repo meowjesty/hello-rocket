@@ -1,11 +1,5 @@
-use std::sync::{atomic::AtomicU64, Mutex};
-
 use errors::AppError;
-use models::Task;
-use rocket::{
-    get, routes,
-    serde::{Deserialize, Serialize},
-};
+use rocket::{get, routes};
 use routes::{
     delete, done, find_all, find_by_id, find_by_pattern, find_ongoing, insert, undo, update,
 };
@@ -17,12 +11,6 @@ mod routes;
 
 const WELCOME: &'static str = include_str!("./../strings/welcome.txt");
 const CREATE_DATABASE: &'static str = include_str!("./../queries/create_database.sql");
-
-#[derive(Serialize, Deserialize)]
-struct AppData {
-    id_tracker: AtomicU64,
-    task_list: Mutex<Vec<Task>>,
-}
 
 #[get("/")]
 async fn index() -> &'static str {
