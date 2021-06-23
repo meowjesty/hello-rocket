@@ -3,6 +3,7 @@
 members = [
     "experiments",
     "minimal",
+    "in-memory",
     "sqlite",
-    "in-memory"
+    "cookies"
 ]
