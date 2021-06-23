@@ -1,6 +1,7 @@
+use rocket::form::FromFormField;
 use rocket::{
     delete, get,
-    http::Status,
+    http::{RawStr, Status},
     post, put,
     response::status::{Accepted, Created, Custom},
     serde::json::Json,
@@ -78,7 +79,15 @@ pub(crate) async fn find_ongoing(db_pool: &State<SqlitePool>) -> Result<Json<Vec
     Ok(Json(tasks))
 }
 
-// TODO(alex) [mid] 2021-06-22: find_by_pattern
+#[get("/tasks?<pattern>")]
+pub(crate) async fn find_by_pattern(
+    db_pool: &State<SqlitePool>,
+    pattern: &str,
+) -> Result<Json<Vec<Task>>, AppError> {
+    let tasks = Task::find_by_pattern(db_pool, pattern).await?;
+
+    Ok(Json(tasks))
+}
 
 #[get("/tasks/<id>")]
 pub(crate) async fn find_by_id(

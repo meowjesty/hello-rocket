@@ -5,7 +5,9 @@ use rocket::{
     get, routes,
     serde::{Deserialize, Serialize},
 };
-use routes::{delete, done, find_all, find_by_id, find_ongoing, insert, undo, update};
+use routes::{
+    delete, done, find_all, find_by_id, find_by_pattern, find_ongoing, insert, undo, update,
+};
 use sqlx::SqlitePool;
 
 mod errors;
@@ -45,6 +47,7 @@ async fn main() {
                 undo,
                 find_all,
                 find_ongoing,
+                find_by_pattern,
                 find_by_id
             ],
         )
