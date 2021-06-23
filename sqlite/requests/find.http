@@ -7,3 +7,8 @@ GET {{baseUrl}}/tasks HTTP/1.1
 
 # @name find_by_id
 GET {{baseUrl}}/tasks/1 HTTP/1.1
+
+####
+
+# @name find_ongoing
+GET {{baseUrl}}/tasks/ongoing HTTP/1.1

@@ -1,7 +1,6 @@
-use rocket::form::FromFormField;
 use rocket::{
     delete, get,
-    http::{RawStr, Status},
+    http::Status,
     post, put,
     response::status::{Accepted, Created, Custom},
     serde::json::Json,
@@ -56,7 +55,7 @@ pub(crate) async fn done(db_pool: &State<SqlitePool>, id: i64) -> Result<Custom<
 
 #[post("/tasks/<id>/undo")]
 pub(crate) async fn undo(db_pool: &State<SqlitePool>, id: i64) -> Result<Custom<String>, AppError> {
-    let num_modified = Task::done(db_pool, id).await?;
+    let num_modified = Task::undo(db_pool, id).await?;
 
     if num_modified == 0 {
         Ok(Custom(Status::NotModified, "".to_string()))
